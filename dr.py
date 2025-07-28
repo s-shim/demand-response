@@ -3,6 +3,7 @@ import math
 import random
 import time
 import copy
+import datetime
 
 def evaluate(theInvited,p,d):
     avgDemand = 0
@@ -17,12 +18,13 @@ def evaluate(theInvited,p,d):
 # input parameters
 z_d = 3 # critical z-value for demand
 z_r = 3 # critical z-value for incentive
-r = 7 # incentive ($) per kwh
-minReduction = 15 # demand reduction - buffer > minReduction
-timeLimit = 10
+r = 1 # incentive ($) per kwh
+numUsers, minReduction, timeLimit = 30, 15, 10 # demand reduction - buffer > minReduction
+# numUsers, minReduction, timeLimit = 400, 200, 900 # demand reduction - buffer > minReduction
+
 
 # read input data
-demand = pd.read_csv('dr_30.csv')
+demand = pd.read_csv('dr_%s.csv'%numUsers)
 
 # store data
 p = {}
@@ -129,6 +131,7 @@ while toc - tic < timeLimit:
             print()
             print('trial =', trial, '; bestIncentive =', bestIncentive, '; elapse time =', toc - tic)
             print('bestDemand =', bestDemand, '; theDemand_avg_best =', theDemand_avg_best, '; theDemand_std_best =', theDemand_std_best)
+            print(datetime.datetime.now())
     
     if reset == False:
         alpha = 1 / (1 + math.exp(4 * RMSD))

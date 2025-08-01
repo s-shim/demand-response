@@ -189,6 +189,7 @@ z_r = 3 # critical z-value for incentive
 r = 1 # incentive ($) per kwh
 #numUsers, minReduction, timeLimit = 30, 15, 10 # demand reduction - buffer > minReduction
 numUsers, minReduction, timeLimit = 400, 200, 30 # demand reduction - buffer > minReduction
+# numUsers, minReduction, timeLimit = 1000, 500, 600 # demand reduction - buffer > minReduction
 # numUsers, minReduction, timeLimit = 10000, 5000, 600 # demand reduction - buffer > minReduction
 
 

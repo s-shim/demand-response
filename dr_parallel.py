@@ -9,7 +9,7 @@ import multiprocessing as mp
 
 machineName = socket.gethostname()
 
-def ARR(iteration, inst, numUsers, allUsers, p, d, z_d, z_r, r, tic, timeLimit):
+def ARR(iteration, inst, numUsers, allUsers, p, d, z_d, z_r, r, tic, timeLimit,machineName,minReduction):
     # inst, numUsers, allUsers, p, d, z_d, z_r, r, tic, timeLimit = inputPackage
     # initial best known solution
     bestInvited = []
@@ -45,21 +45,25 @@ def ARR(iteration, inst, numUsers, allUsers, p, d, z_d, z_r, r, tic, timeLimit):
         invited_half[i] = 0.5
         invited_seed[i] = 0.5
 
-        machineArray = []
-        iterArray = []
-        popArray  = []
-        instArray  = []
-        z_d_Array = []
-        z_r_Array = []
-        r_Array = []
-        min_Array = []
-        tlArray = []
-        timeArray  = []
-        biArray  = []
-        bdArray  = []
-        avgArray  = []
-        varArray  = []
-        stdArray  = []
+    machineArray = [machineName]
+    iterArray = [iteration]
+    popArray = [numUsers]
+    instArray = [inst]
+    
+    z_d_Array = [z_d]
+    z_r_Array = [z_r]
+    r_Array = [r]
+    min_Array = [minReduction]
+    tlArray = [timeLimit]
+    
+    toc = time.time()
+    timeArray = [toc - tic]
+    trialArray = [0]
+    biArray = [bestIncentive]
+    bdArray = [bestDemand]
+    avgArray = [avgDemand_best]
+    varArray = [varDemand_best]
+    stdArray = [stdDemand_best]
     
     toc = time.time()
     trial = 0
@@ -136,14 +140,15 @@ def ARR(iteration, inst, numUsers, allUsers, p, d, z_d, z_r, r, tic, timeLimit):
                 tlArray += [timeLimit]
                 
                 timeArray += [toc - tic]
+                trialArray += [trial]
                 biArray += [bestIncentive]
                 bdArray += [bestDemand]
                 avgArray += [theDemand_avg_best]
                 varArray += [theDemand_var_best]
                 stdArray += [theDemand_std_best]
 
-                listColumn = list(zip(machineArray,iterArray,popArray,instArray,z_d_Array,z_r_Array,r_Array,min_Array,tlArray,timeArray,biArray,bdArray,avgArray,varArray,stdArray))
-                nameColumn = ['Machine','Iteration','Users','Instance','z_d','z_r','r','minReduction','timeLimit','Time','Incentive','Demand','Average','Variance','STD']
+                listColumn = list(zip(machineArray,iterArray,popArray,instArray,z_d_Array,z_r_Array,r_Array,min_Array,tlArray,timeArray,trialArray,biArray,bdArray,avgArray,varArray,stdArray))
+                nameColumn = ['Machine','Iteration','Users','Instance','z_d','z_r','r','minReduction','timeLimit','Time','Trial','Incentive','Demand','Average','Variance','STD']
                 process = pd.DataFrame(listColumn,columns = nameColumn)
                 process.to_csv(r'mp/process/dr_process_%s_inst%s_iter%s.csv'%(numUsers,inst,iteration), index = False)#Check
         
@@ -165,8 +170,8 @@ def ARR(iteration, inst, numUsers, allUsers, p, d, z_d, z_r, r, tic, timeLimit):
 
 
 def ARR2(arg):    
-    iteration, inst, numUsers, allUsers, p, d, z_d, z_r, r, tic, timeLimit = arg    
-    return ARR(iteration, inst, numUsers, allUsers, p, d, z_d, z_r, r, tic, timeLimit)
+    iteration, inst, numUsers, allUsers, p, d, z_d, z_r, r, tic, timeLimit, machineName, minReduction = arg    
+    return ARR(iteration, inst, numUsers, allUsers, p, d, z_d, z_r, r, tic, timeLimit, machineName, minReduction)
 
 def evaluate(theInvited,p,d):
     avgDemand = 0
@@ -182,8 +187,9 @@ def evaluate(theInvited,p,d):
 z_d = 3 # critical z-value for demand
 z_r = 3 # critical z-value for incentive
 r = 1 # incentive ($) per kwh
-numUsers, minReduction, timeLimit = 30, 15, 10 # demand reduction - buffer > minReduction
-# numUsers, minReduction, timeLimit = 400, 200, 900 # demand reduction - buffer > minReduction
+#numUsers, minReduction, timeLimit = 30, 15, 10 # demand reduction - buffer > minReduction
+numUsers, minReduction, timeLimit = 400, 200, 30 # demand reduction - buffer > minReduction
+# numUsers, minReduction, timeLimit = 10000, 5000, 600 # demand reduction - buffer > minReduction
 
 
 # read input data
@@ -221,7 +227,7 @@ if __name__ == '__main__':
 
     multiArgs = []  
     for iteration in range(numCores):
-        multiArgs += [(iteration, inst, numUsers, allUsers, p, d, z_d, z_r, r, tic, timeLimit)]  
+        multiArgs += [(iteration, inst, numUsers, allUsers, p, d, z_d, z_r, r, tic, timeLimit, machineName, minReduction)]  
 
     results = poo.map(ARR2, multiArgs)
     
@@ -244,6 +250,8 @@ if __name__ == '__main__':
     grand_varVal = [grandIteration]
     grand_varName += ['incentive']
     grand_varVal += [grandIncentive]
+    grand_varName += ['initial']
+    grand_varVal += [initialIncentive]
     grand_varName += ['r']
     grand_varVal += [r]
     grand_varName += ['z_r']
